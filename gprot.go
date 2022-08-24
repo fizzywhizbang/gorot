@@ -1,42 +1,106 @@
 //this package encodes and decodes in ROT13
 package gorot
 
-import "io"
+import "strings"
 
-type writer struct {
-	wrapped io.Writer
-}
-
-type reader struct {
-	wrapped io.Reader
-}
-
-// NewWriter creates a new io.Writer that encrypts with ROT13.
-func Writer(wrapped io.Writer) io.Writer {
-	return &writer{wrapped}
-}
-
-// NewReader creates a new io.Reader that encrypts with ROT13.
-func Reader(wrapped io.Reader) io.Reader {
-	return &reader{wrapped}
-}
-
-func (r *writer) Write(p []byte) (int, error) {
-	o := make([]byte, len(p))
-	for i := 0; i < len(p); i++ {
-		o[i] = p[i] + 13
+func indexPosition(s string, arr []string) int {
+	for i, c := range arr {
+		if c == s {
+			return i
+		}
 	}
-	return r.wrapped.Write(o)
+
+	return -1
 }
 
-func (r *reader) Read(p []byte) (int, error) {
-	n, err := r.wrapped.Read(p)
-	if err != nil {
-		return n, err
+// Encode takes a plain text message and returns the rot13 encoded result.
+func Encode(message string) string {
+	alphabet := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
+	alphaLen := len(alphabet)
+
+	var encoded []string
+
+	for _, c := range message {
+		strC := string(c)
+		if strC == " " {
+			encoded = append(encoded, " ")
+
+			continue
+		}
+
+		isUpper := false
+		if strings.ToLower(strC) != strC {
+			isUpper = true
+		}
+
+		i := indexPosition(strings.ToLower(strC), alphabet)
+		if i == -1 {
+			encoded = append(encoded, strC)
+
+			continue
+		}
+
+		var pos int
+		pos = i + 13
+
+		if pos >= alphaLen {
+			pos = (i + 13) - alphaLen
+		}
+
+		if isUpper {
+			encoded = append(encoded, strings.ToUpper(alphabet[pos]))
+
+			continue
+		}
+
+		encoded = append(encoded, alphabet[pos])
 	}
-	//itterate all text and replace
-	for i := 0; i < n; i++ {
-		p[i] = p[i] - 13
+
+	return strings.Join(encoded, "")
+}
+
+// Decode takes a rot13 encoded message and returns the unencoded result.
+func Decode(message string) string {
+	alphabet := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
+	alphaLen := len(alphabet)
+
+	var decoded []string
+
+	for _, c := range message {
+		strC := string(c)
+		if strC == " " {
+			decoded = append(decoded, " ")
+
+			continue
+		}
+
+		isUpper := false
+		if strings.ToLower(strC) != strC {
+			isUpper = true
+		}
+
+		i := indexPosition(strings.ToLower(strC), alphabet)
+		if i == -1 {
+			decoded = append(decoded, strC)
+
+			continue
+		}
+
+		var pos int
+		pos = i - 13
+
+		if pos < 0 {
+			pos = alphaLen + (i - 13)
+		}
+
+		if isUpper {
+			decoded = append(decoded, strings.ToUpper(alphabet[pos]))
+
+			continue
+		}
+
+		decoded = append(decoded, alphabet[pos])
 	}
-	return n, err
+
+	return strings.Join(decoded, "")
 }
