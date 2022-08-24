@@ -12,12 +12,12 @@ type reader struct {
 }
 
 // NewWriter creates a new io.Writer that encrypts with ROT13.
-func NewWriter(wrapped io.Writer) io.Writer {
+func Writer(wrapped io.Writer) io.Writer {
 	return &writer{wrapped}
 }
 
 // NewReader creates a new io.Reader that encrypts with ROT13.
-func NewReader(wrapped io.Reader) io.Reader {
+func Reader(wrapped io.Reader) io.Reader {
 	return &reader{wrapped}
 }
 
